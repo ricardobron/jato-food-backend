@@ -1,0 +1,11 @@
+{
+  "configurations": [
+    {
+      "name": "regen-back",
+      "type": "node-terminal",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "command": "npx tsx --tsconfig ./tsconfig.json src/app/app.ts"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TransactionMode {
+  Cash
+  Online
+}
+
+enum TransactionStatus {
+  Cancelled
+  Failed
+  Pending
+  Rejected
+  Success
+}
+
+enum OrderStatus {
+  New
+  ToDeliver
+  Paid
+  Rejected
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String? @unique
+  phone_number String?
+  code         String?
+  password     String?
+
+  role Role @default(USER)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  Order       Order[]
+  Transaction Transaction[]
+  connections Connections[]
+
+  @@map(name: "users")
+}
+
+model Connections {
+  id        String @id @default(cuid())
+  socket_id String
+  user_id   String
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map(name: "connections")
+}
+
+model Products {
+  id    String @id @default(cuid())
+  name  String
+  price Float
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+  deleted_at DateTime?
+
+  active Boolean @default(true)
+
+  OrderItem OrderItem[]
+
+  @@map(name: "products")
+}
+
+model Order {
+  id           String @id @default(cuid())
+  order_number Int
+  table        String
+  total        Float
+
+  user_id String
+
+  status OrderStatus @default(New)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [user_id], references: [id])
+
+  order_items  OrderItem[]
+  transactions Transaction[]
+
+  @@map(name: "orders")
+}
+
+model OrderItem {
+  id String @id @default(cuid())
+
+  order_id   String
+  product_id String
+  price      Float
+  quantity   Float
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  product Products @relation(fields: [product_id], references: [id])
+  order   Order    @relation(fields: [order_id], references: [id])
+
+  @@map(name: "order_items")
+}
+
+model Transaction {
+  id       String @id @default(cuid())
+  user_id  String
+  order_id String
+
+  mode   TransactionMode
+  status TransactionStatus @default(Pending)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  user  User  @relation(fields: [user_id], references: [id])
+  order Order @relation(fields: [order_id], references: [id])
+
+  @@map(name: "transactions")
+}

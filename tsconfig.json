@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "strict": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outDir": "./dist",
+    "rootDirs": ["./src"],
+    "baseUrl": "./src",
+    "resolveJsonModule": true,
+    "paths": {
+      "@config/*": ["app/config/*"],
+      "@app/*": ["app/*"]
+    },
+    "esModuleInterop": true,
+    "experimentalDecorators": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "coverage", "src/__tests__", "prisma"]
+}
