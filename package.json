@@ -24,7 +24,7 @@
     "build": "tsc --noEmit",
     "start": "tsx --tsconfig ./tsconfig.json src/app/app.ts",
     "preproduction-build": "rm -rf dist",
-    "production-build": "swc src -d dist --copy-files",
+    "production-build": "swc src -d dist --copy-files && npx prisma migrate deploy",
     "production-start": "node dist/src/app/app.js --use-strict"
   },
   "devDependencies": {
