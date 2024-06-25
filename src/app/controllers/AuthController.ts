@@ -55,8 +55,6 @@ class AuthController {
   async client(req: Request, res: Response) {
     const { phone_number, code } = req.body;
 
-    console.log(req.body);
-
     let user;
 
     user = await prisma.user.findFirst({
