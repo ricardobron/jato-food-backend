@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^5.13.0",
+    "@prisma/client": "^5.16.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -26,6 +26,9 @@
     "preproduction-build": "rm -rf dist",
     "production-build": "swc src -d dist --copy-files && npx prisma migrate deploy",
     "production-start": "node dist/src/app/app.js --use-strict"
+  },
+  "prisma": {
+    "seed": "tsx --tsconfig ./tsconfig.json prisma/seed.ts"
   },
   "devDependencies": {
     "@swc/cli": "^0.3.12",
@@ -55,7 +58,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^5.0.0",
     "prettier": "^3.2.5",
-    "prisma": "^5.13.0",
+    "prisma": "^5.16.2",
     "tsx": "^4.9.3",
     "typescript": "^5.4.5"
   }

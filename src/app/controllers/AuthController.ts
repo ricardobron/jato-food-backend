@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import AppError from '@app/errors/AppError';
 
 import prisma from '@app/lib/prisma';
-import { compare, hash } from 'bcryptjs';
+import { compare } from 'bcryptjs';
 
 import authConfig from '@config/auth';
 import { sign } from 'jsonwebtoken';
+import { IAuthClient } from '@app/validators/authClient';
 
 class AuthController {
   async admin(req: Request, res: Response) {
@@ -53,7 +54,7 @@ class AuthController {
   }
 
   async client(req: Request, res: Response) {
-    const { phone_number, code } = req.body;
+    const { phone_number, pin_table, table } = req.body as IAuthClient;
 
     let user;
 
@@ -65,29 +66,25 @@ class AuthController {
         id: true,
         phone_number: true,
         role: true,
-        code: true,
       },
     });
 
     if (!user) {
-      const codeHashed = await hash(code, 8);
-
       user = await prisma.user.create({
         data: {
-          code: codeHashed,
           phone_number,
         },
       });
     }
 
-    if (!user.code) {
-      throw new AppError('User invalid');
+    const _table = await prisma.tables.findFirst({ where: { number: table } });
+
+    if (!_table) {
+      throw new AppError('Table not found');
     }
 
-    const codeMatched = await compare(code, user.code);
-
-    if (!codeMatched) {
-      throw new AppError('Code not match');
+    if (_table.pin !== pin_table) {
+      throw new AppError('Pin not match');
     }
 
     const { expiresInToken, secret } = authConfig.jwt;

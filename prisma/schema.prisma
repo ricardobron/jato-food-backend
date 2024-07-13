@@ -9,9 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -33,20 +33,15 @@ enum TransactionStatus {
 }
 
 enum OrderStatus {
-  New
-  Unpaid
-  Paid
   Preparing
-  ToDeliver
+  Paid
   Delivered
-  Rejected
 }
 
 model User {
   id           String  @id @default(cuid())
   email        String? @unique
   phone_number String?
-  code         String?
   password     String?
 
   role Role @default(USER)
@@ -87,20 +82,31 @@ model Products {
   @@map(name: "products")
 }
 
+model Tables {
+  id     String @id @default(cuid())
+  number Int
+  pin    String
+
+  Order Order[]
+
+  @@map(name: "tables")
+}
+
 model Order {
   id           String @id @default(cuid())
   order_number Int
-  table        String
   total        Float
 
-  user_id String
+  user_id  String
+  table_id String
 
-  status OrderStatus @default(New)
+  status OrderStatus @default(Preparing)
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
-  user User @relation(fields: [user_id], references: [id])
+  table Tables @relation(fields: [table_id], references: [id])
+  user  User   @relation(fields: [user_id], references: [id])
 
   order_items  OrderItem[]
   transactions Transaction[]

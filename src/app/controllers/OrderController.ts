@@ -15,7 +15,7 @@ interface IProductsOrder {
 
 interface ICreateOrder {
   products: IProductsOrder[];
-  table: string;
+  table_number: string;
 }
 
 interface IUpdateOrder {
@@ -52,7 +52,7 @@ class OrderController {
   }
 
   async create(req: Request, res: Response) {
-    const { products, table } = req.body as ICreateOrder;
+    const { products, table_number } = req.body as ICreateOrder;
 
     const user_id = req.user.id;
 
@@ -87,10 +87,19 @@ class OrderController {
 
     const lastOrderNumber = (lastOrder?.order_number || 0) + 1;
 
+    const table = await prisma.tables.findFirstOrThrow({
+      where: { number: Number(table_number) },
+    });
+
     const createdOrder = await prisma.$transaction<ICreatedOrderSocket>(
       async (tx) => {
         const order = await tx.order.create({
-          data: { table, total, user_id, order_number: lastOrderNumber },
+          data: {
+            total,
+            user_id,
+            order_number: lastOrderNumber,
+            table_id: table.id,
+          },
         });
 
         await tx.orderItem.createMany({
