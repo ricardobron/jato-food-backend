@@ -11,7 +11,7 @@ const routes = Router();
 routes.use('/auth', authRouter);
 routes.use('/order', orderRouter);
 routes.use('/product', productRouter);
-routes.use('/user', userRouter);
+// routes.use('/user', userRouter);
 routes.use('/table', tableRouter);
 
 export default routes;
