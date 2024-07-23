@@ -121,6 +121,7 @@ model OrderItem {
   product_id String
   price      Float
   quantity   Float
+  checked    Boolean @default(false)
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt

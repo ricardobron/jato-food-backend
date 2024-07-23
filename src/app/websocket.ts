@@ -48,6 +48,10 @@ export const setupWebsocket = (server: any) => {
       });
     }
 
+    socket.on('order_item_update', async (data: ISockeUpdateOrderItem) => {
+      await updateOrderItemSocket(data);
+    });
+
     socket.on('disconnect', async () => {
       if (user.role === 'ADMIN') {
         io.in(socket.id).socketsLeave('admin');
@@ -66,6 +70,7 @@ export const setupWebsocket = (server: any) => {
 
 export type ICreatedOrderSocket = Order & {
   order_items: {
+    id: string;
     name: string;
     quantity: number;
     price: number;
@@ -77,9 +82,10 @@ interface ISocketCreateOrder {
   order: ICreatedOrderSocket;
 }
 
-interface ISocketUpdatedOrder {
-  user_id: string;
-  order: ICreatedOrderSocket;
+interface ISockeUpdateOrderItem {
+  order_id: string;
+  order_item_id: string;
+  checked: boolean;
 }
 
 export const createOrderSocket = async ({
@@ -110,4 +116,17 @@ export const updateOrderSocket = async ({
   const userSocketIds = userConnections.map((pr) => pr.socket_id);
 
   io.to(['admin', ...userSocketIds]).emit('order_updated', order);
+};
+
+export const updateOrderItemSocket = async ({
+  order_id,
+  order_item_id,
+  checked,
+}: ISockeUpdateOrderItem) => {
+  const order = await prisma.orderItem.update({
+    data: { checked },
+    where: { order_id, id: order_item_id },
+  });
+
+  io.to(['admin']).emit('order_item_updated', order);
 };

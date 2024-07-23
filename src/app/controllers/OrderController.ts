@@ -42,9 +42,11 @@ class OrderController {
     const formatedResponse = response.map((order) => ({
       ...order,
       order_items: order.order_items.map((item) => ({
+        id: item.id,
         name: item.product.name,
         quantity: item.quantity,
         price: item.product.price,
+        checked: item.checked,
       })),
     }));
 
@@ -91,7 +93,7 @@ class OrderController {
       where: { number: Number(table_number) },
     });
 
-    const createdOrder = await prisma.$transaction<ICreatedOrderSocket>(
+    const { order_id } = await prisma.$transaction<{ order_id: string }>(
       async (tx) => {
         const order = await tx.order.create({
           data: {
@@ -113,20 +115,26 @@ class OrderController {
           }),
         });
 
-        const dataPrismaTransaction: ICreatedOrderSocket = {
-          ...order,
-          order_items: allProducts.map((_productItem) => ({
-            name: _productItem.name,
-            price: _productItem.price,
-            quantity: productQuantity(_productItem.id),
-          })),
-        };
-
-        return dataPrismaTransaction;
+        return { order_id: order.id };
       }
     );
 
-    await createOrderSocket({ user_id: req.user.id, order: createdOrder });
+    const createdOrder = await prisma.order.findFirstOrThrow({
+      where: { id: order_id },
+      include: { order_items: { include: { product: true } } },
+    });
+
+    const responseFormated: ICreatedOrderSocket = {
+      ...createdOrder,
+      order_items: createdOrder.order_items.map((_productItem) => ({
+        id: _productItem.id,
+        name: _productItem.product.name,
+        price: _productItem.product.price,
+        quantity: productQuantity(_productItem.id),
+      })),
+    };
+
+    await createOrderSocket({ user_id: req.user.id, order: responseFormated });
 
     return res.send();
   }
@@ -141,8 +149,10 @@ class OrderController {
       include: {
         order_items: {
           select: {
+            id: true,
             quantity: true,
             price: true,
+            checked: true,
             product: {
               select: { name: true },
             },
@@ -156,9 +166,11 @@ class OrderController {
       order: {
         ..._order,
         order_items: _order.order_items.map((pr) => ({
+          id: pr.id,
           name: pr.product.name,
           price: pr.price,
           quantity: pr.quantity,
+          checked: pr.checked,
         })),
       },
     });
