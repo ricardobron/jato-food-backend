@@ -130,7 +130,7 @@ class OrderController {
         id: _productItem.id,
         name: _productItem.product.name,
         price: _productItem.product.price,
-        quantity: productQuantity(_productItem.id),
+        quantity: productQuantity(_productItem.product_id),
       })),
     };
 
