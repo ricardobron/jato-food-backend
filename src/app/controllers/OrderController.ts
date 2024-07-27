@@ -31,6 +31,7 @@ class OrderController {
     const response = await prisma.order.findMany({
       where: { ...(user.role === 'ADMIN' ? {} : { user_id: user.id }) },
       include: {
+        table: true,
         order_items: {
           include: {
             product: true,
@@ -41,6 +42,7 @@ class OrderController {
 
     const formatedResponse = response.map((order) => ({
       ...order,
+      table: order.table.number,
       order_items: order.order_items.map((item) => ({
         id: item.id,
         name: item.product.name,
@@ -121,11 +123,12 @@ class OrderController {
 
     const createdOrder = await prisma.order.findFirstOrThrow({
       where: { id: order_id },
-      include: { order_items: { include: { product: true } } },
+      include: { table: true, order_items: { include: { product: true } } },
     });
 
     const responseFormated: ICreatedOrderSocket = {
       ...createdOrder,
+      table: createdOrder.table.number,
       order_items: createdOrder.order_items.map((_productItem) => ({
         id: _productItem.id,
         name: _productItem.product.name,
@@ -147,6 +150,7 @@ class OrderController {
       data: { status },
       where: { id },
       include: {
+        table: true,
         order_items: {
           select: {
             id: true,
@@ -165,6 +169,7 @@ class OrderController {
       user_id: _order.user_id,
       order: {
         ..._order,
+        table: _order.table.number,
         order_items: _order.order_items.map((pr) => ({
           id: pr.id,
           name: pr.product.name,

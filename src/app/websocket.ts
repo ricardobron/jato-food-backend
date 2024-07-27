@@ -69,6 +69,7 @@ export const setupWebsocket = (server: any) => {
 };
 
 export type ICreatedOrderSocket = Order & {
+  table: number;
   order_items: {
     id: string;
     name: string;
